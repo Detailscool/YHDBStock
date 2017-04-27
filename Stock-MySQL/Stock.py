@@ -63,30 +63,32 @@ def enqueue_stock_data():
 
     print 'stock_list leng:', len(stock_list)
 
-    # thread_count = 6
-    # per_count = len(stock_list)//thread_count
-    # print 'per_count :', per_count
-    #
-    # pool = []
-    # queue = Queue.Queue()
-    # for i in range(0, thread_count):
-    #     t = threading.Thread(target=download_stock_data, name='GetStockThread %s ' % (i), args=[stock_list[(per_count * i): (per_count * (i+1))], queue])
-    #     pool.append(t)
-    #
-    # result = []
-    # for t in pool:
-    #     t.start()
-    #     result.extend(queue.get())
-    #
-    # for t in pool:
-    #     t.join()
-    #
-    # print 'done'
-    # # print 'result ：', len(result), '\n', result
-    # print '下载耗时：', time() - start
-    # start = time()
+    thread_count = 6
+    per_count = len(stock_list)//thread_count
+    print 'per_count :', per_count
 
-    database = StockDatabaseManager(5, stocks=stock_list)
+    queue = Queue.Queue()
+
+    pool = []
+    for i in range(0, thread_count):
+        t = threading.Thread(target=download_stock_data, name='GetStockThread %s ' % (i), args=[stock_list[(per_count * i): (per_count * (i+1))], queue])
+        pool.append(t)
+
+    for t in pool:
+        t.start()
+
+    for t in pool:
+        t.join()
+
+    result = []
+    for _ in pool:
+        result.extend(queue.get())
+
+    print 'done --- ', len(result)
+    print '下载耗时：', time() - start
+    start = time()
+
+    # database = StockDatabaseManager(5, stocks=stock_list)
     # for stock_code, date, stock_data in result:
     #     database.enqueue_stock(stock_code=stock_code, date=date.encode('utf8'), stock_data=stock_data)
     # print '插入数据库耗时：', time() - start
@@ -99,8 +101,6 @@ def dequeue_stock(stock_code):
     pass
 
 if __name__ == '__main__':
-    # database = StockDatabaseManager(5)
-
     if len(sys.argv[1:]) > 1:
         print '参数过多'
     else:
@@ -116,9 +116,7 @@ if __name__ == '__main__':
                 elif int(work_name) == 3:
                     print 3
                     stock_code = raw_input('输入股票代码:\n').strip()
-                    # start = time()
                     if stock_code:
-                        # for i in range(100):
                         dequeue_stock(stock_code)
                     # print '耗时：', time() - start
                 else:
