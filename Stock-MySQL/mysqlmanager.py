@@ -10,7 +10,7 @@ class StockDatabaseManager:
 
     TABLES = {}
     TABLES['stocks'] = (
-        "CREATE TABLE IF NOT EXISTS `%s` ("
+        "CREATE TABLE IF NOT EXISTS `t_%s` ("
         "  `index` int(11) NOT NULL AUTO_INCREMENT,"
         "  `code` varchar(512) NOT NULL,"
         "  `date` varchar(32) NOT NULL,"
@@ -99,7 +99,7 @@ class StockDatabaseManager:
         con = self.cnxpool.get_connection()
         cursor = con.cursor()
         try:
-            string = "INSERT INTO %s (code, date, open, high, close, low, volume, price_change, p_change, ma5, ma10, ma20, v_ma5, v_ma10, v_ma20) " % (stock_code)
+            string = "INSERT INTO t_%s (code, date, open, high, close, low, volume, price_change, p_change, ma5, ma10, ma20, v_ma5, v_ma10, v_ma20) " % (stock_code)
             add_stock = (string + "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
             data_stock = (stock_code, date, float(stock_data.open), float(stock_data.high), float(stock_data.close), float(stock_data.low), float(stock_data.volume), float(stock_data.price_change), float(stock_data.p_change), float(stock_data.ma5), float(stock_data.ma10), float(stock_data.ma20), float(stock_data.v_ma5), float(stock_data.v_ma10), float(stock_data.v_ma20))
             cursor.execute(add_stock, data_stock)
@@ -113,20 +113,20 @@ class StockDatabaseManager:
             con.close()
 
 
-    def dequeue_stock(self, stock_code):
-        con = self.cnxpool.get_connection()
-        cursor = con.cursor(dictionary=True)
-        try:
-            query = ("SELECT * FROM stocks WHERE code=%s ORDER BY `index` ASC") % (stock_code)
-            cursor.execute(query)
-            if cursor.rowcount is 0:
-                return None
-            row = cursor.fetchall()
-            con.commit()
-            return row
-        except mysql.connector.Error as err:
-            print 'dequeueUrl() ' + err.msg
-            return None
-        finally:
-            cursor.close()
-            con.close()
+    # def dequeue_stock(self, stock_code):
+    #     con = self.cnxpool.get_connection()
+    #     cursor = con.cursor(dictionary=True)
+    #     try:
+    #         query = ("SELECT * FROM t_%s ORDER BY `index` ASC") % (stock_code)
+    #         cursor.execute(query)
+    #         if cursor.rowcount is 0:
+    #             return None
+    #         row = cursor.fetchall()
+    #         con.commit()
+    #         return row
+    #     except mysql.connector.Error as err:
+    #         print 'dequeueUrl() ' + err.msg
+    #         return None
+    #     finally:
+    #         cursor.close()
+    #         con.close()
