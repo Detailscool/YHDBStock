@@ -2,14 +2,19 @@ import mysql.connector
 from mysql.connector import errorcode
 from mysql.connector import pooling
 
-class StockDatabaseManager:
+class MysqlDBManager:
+    _instance = None
+    def __new__(cls, *args, **kw):
+        if not cls._instance:
+            cls._instance = super(MysqlDBManager, cls).__new__(cls, *args, **kw)
+        return cls._instance
 
-    DB_NAME = 'stock_database'
+    __DB_NAME = 'stock_database'
 
-    SERVER_IP = '127.0.0.1'
+    __SERVER_IP = '127.0.0.1'
 
-    TABLES = {}
-    TABLES['stocks'] = (
+    __TABLES = {}
+    __TABLES['stocks'] = (
         "CREATE TABLE IF NOT EXISTS `t_%s` ("
         "  `index` int(11) NOT NULL AUTO_INCREMENT,"
         "  `code` varchar(512) NOT NULL,"
@@ -30,10 +35,9 @@ class StockDatabaseManager:
         "  PRIMARY KEY (`index`)"
         ") ENGINE=InnoDB")
 
-
-    def __init__(self, max_num_thread, stocks=None):
+    def __init__(self, max_num_thread=5, stocks=None):
         try:
-            cnx = mysql.connector.connect(host=self.SERVER_IP, user='root')
+            cnx = mysql.connector.connect(host=self.__SERVER_IP, user='root')
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 print("Something is wrong with your user name or password")
@@ -46,15 +50,17 @@ class StockDatabaseManager:
         cursor = cnx.cursor()
 
         try:
-            cnx.database = self.DB_NAME
-            self.create_connectionPool(max_num_thread)
-            self.create_tables(cursor, stocks)
+            cnx.database = self.__DB_NAME
+            if max_num_thread:
+                self.__create_connectionPool(max_num_thread)
+            if stocks:
+                self.__create_tables(cursor, stocks)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:
-                self.create_database(cursor)
-                cnx.database = self.DB_NAME
-                self.create_connectionPool(max_num_thread)
-                self.create_tables(cursor, stocks)
+                self.__create_database(cursor)
+                cnx.database = self.__DB_NAME
+                self.__create_connectionPool(max_num_thread)
+                self.__create_tables(cursor, stocks)
             else:
                 print(err)
                 exit(1)
@@ -62,28 +68,28 @@ class StockDatabaseManager:
             cursor.close()
             cnx.close()
 
-    def create_connectionPool(self, max_num_thread):
+    def __create_connectionPool(self, max_num_thread):
         dbconfig = {
-            "database": self.DB_NAME,
+            "database": self.__DB_NAME,
             "user": "root",
-            "host": self.SERVER_IP,
+            "host": self.__SERVER_IP,
         }
         self.cnxpool = mysql.connector.pooling.MySQLConnectionPool(pool_name="mypool",
                                                                    pool_size=max_num_thread,
                                                                    **dbconfig)
 
-    def create_database(self, cursor):
+    def __create_database(self, cursor):
         try:
             cursor.execute(
-                "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format(self.DB_NAME))
+                "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format(self.__DB_NAME))
         except mysql.connector.Error as err:
             print("Failed creating database: {}".format(err))
             exit(1)
 
-    def create_tables(self, cursor, stocks):
+    def __create_tables(self, cursor, stocks):
         if stocks is not None and stocks:
             for i, stock in enumerate(stocks):
-                for name, ddl in self.TABLES.iteritems():
+                for name, ddl in self.__TABLES.iteritems():
                     try:
                         cursor.execute(ddl % stock)
                     except mysql.connector.Error as err:
@@ -113,20 +119,20 @@ class StockDatabaseManager:
             con.close()
 
 
-    # def dequeue_stock(self, stock_code):
-    #     con = self.cnxpool.get_connection()
-    #     cursor = con.cursor(dictionary=True)
-    #     try:
-    #         query = ("SELECT * FROM t_%s ORDER BY `index` ASC") % (stock_code)
-    #         cursor.execute(query)
-    #         if cursor.rowcount is 0:
-    #             return None
-    #         row = cursor.fetchall()
-    #         con.commit()
-    #         return row
-    #     except mysql.connector.Error as err:
-    #         print 'dequeueUrl() ' + err.msg
-    #         return None
-    #     finally:
-    #         cursor.close()
-    #         con.close()
+    def dequeue_stock(self, stock_code):
+        con = self.cnxpool.get_connection()
+        cursor = con.cursor(dictionary=True)
+        try:
+            query = ("SELECT * FROM t_%s ORDER BY `date` ASC") % (stock_code)
+            cursor.execute(query)
+            if cursor.rowcount is 0:
+                return None
+            row = cursor.fetchall()
+            con.commit()
+            return row
+        except mysql.connector.Error as err:
+            print 'dequeueUrl() ' + err.msg
+            return None
+        finally:
+            cursor.close()
+            con.close()

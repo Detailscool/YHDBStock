@@ -2,13 +2,15 @@
 
 import tushare as ts
 from time import time
-from mysqlmanager import StockDatabaseManager
 from bs4 import BeautifulSoup
 import requests
 import re
 import sys
 import threading
 import Queue
+
+from MysqlDBManager import MysqlDBManager
+from MongoDBManager import MongoDBManager
 
 def getHTMLText(url, code="utf-8"):
     try:
@@ -39,7 +41,7 @@ def getStockList(stock_list_url):
 def download_stock_data(stock_list, queue):
     stock_datas = []
     for index, stock_code in enumerate(stock_list):
-        data_frame = ts.get_hist_data(stock_code, start='2017-01-01', end='2017-04-27')
+        data_frame = ts.get_hist_data(stock_code, start='2017-05-03', end='2017-06-30')
         if data_frame is not None:
             for date, stock_data in data_frame.iterrows():
                 # print 'index :\n', type(date), '\n', date
@@ -62,6 +64,9 @@ def enqueue_stock_data():
     stock_list = sz_stock_list + sh_stock_list
 
     print 'stock_list leng:', len(stock_list)
+
+    #Test
+    # stock_list = stock_list[:6]
 
     thread_count = 6
     per_count = len(stock_list)//thread_count
@@ -92,17 +97,25 @@ def enqueue_stock_data():
     print '下载耗时：', time() - start
     start = time()
 
-    database = StockDatabaseManager(5, stocks=stock_list)
+    database = MysqlDBManager(5, stocks=stock_list)
+    # database = MongoDBManager()
+
+    print '打开数据库耗时：', time() - start
+    start = time()
+
     for stock_code, date, stock_data in result:
         database.enqueue_stock(stock_code=stock_code, date=date.encode('utf8'), stock_data=stock_data)
     print '插入数据库耗时：', time() - start
 
 def dequeue_stock(stock_code):
-    # start = time()
-    # data = database.dequeue_stock(stock_code=stock_code)
-    # print '耗时：', time() - start
-    # print data, '\n', len(data), '条数据'
-    pass
+    start = time()
+    database = MysqlDBManager()
+    data = database.dequeue_stock(stock_code=stock_code)
+    if data:
+        print '耗时：', time() - start
+        print data, '\n', len(data), '条数据'
+    else:
+        print '输入有误'
 
 if __name__ == '__main__':
     if len(sys.argv[1:]) > 1:
