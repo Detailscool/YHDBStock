@@ -12,6 +12,8 @@ import Queue
 from MysqlDBManager import MysqlDBManager
 from MongoDBManager import MongoDBManager
 
+from StockPylot import StockPylot
+
 def getHTMLText(url, code="utf-8"):
     try:
         r = requests.get(url, timeout=30)
@@ -41,7 +43,7 @@ def getStockList(stock_list_url):
 def download_stock_data(stock_list, queue):
     stock_datas = []
     for index, stock_code in enumerate(stock_list):
-        data_frame = ts.get_hist_data(stock_code, start='2017-05-03', end='2017-06-30')
+        data_frame = ts.get_hist_data(stock_code, start='2017-07-01', end='2017-07-24')
         if data_frame is not None:
             for date, stock_data in data_frame.iterrows():
                 # print 'index :\n', type(date), '\n', date
@@ -77,9 +79,9 @@ def enqueue_stock_data():
     pool = []
     for i in range(0, thread_count):
         if i != thread_count - 1:
-            t = threading.Thread(target=download_stock_data, name='GetStockThread %s ' % (i), args=[stock_list[(per_count * i): (per_count * (i+1))], queue])
+            t = threading.Thread(target=download_stock_data, name='GetStockThread %s ' % i, args=[stock_list[(per_count * i): (per_count * (i+1))], queue])
         else:
-            t = threading.Thread(target=download_stock_data, name='GetStockThread %s ' % (i),
+            t = threading.Thread(target=download_stock_data, name='GetStockThread %s ' % i,
                                  args=[stock_list[(per_count * i): -1], queue])
         pool.append(t)
 
@@ -113,7 +115,8 @@ def dequeue_stock(stock_code):
     data = database.dequeue_stock(stock_code=stock_code)
     if data:
         print '耗时：', time() - start
-        print data, '\n', len(data), '条数据'
+        # StockPylot.line_plot(data)
+        StockPylot.bar_plot(data)
     else:
         print '输入有误'
 
