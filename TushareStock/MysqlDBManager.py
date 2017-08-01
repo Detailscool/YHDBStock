@@ -3,6 +3,7 @@ from mysql.connector import errorcode
 from mysql.connector import pooling
 
 class MysqlDBManager:
+
     _instance = None
     def __new__(cls, *args, **kw):
         if not cls._instance:
@@ -47,26 +48,31 @@ class MysqlDBManager:
                 print 'Create Error ' + err.msg
             exit(1)
 
-        cursor = cnx.cursor()
+        self.__cursor = cnx.cursor()
 
         try:
             cnx.database = self.__DB_NAME
             if max_num_thread:
                 self.__create_connectionPool(max_num_thread)
             if stocks:
-                self.__create_tables(cursor, stocks)
+                self.stocks = stocks
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:
-                self.__create_database(cursor)
+                self.__create_database(self.__cursor)
                 cnx.database = self.__DB_NAME
                 self.__create_connectionPool(max_num_thread)
-                self.__create_tables(cursor, stocks)
+                self.stocks = stocks
             else:
                 print(err)
                 exit(1)
         finally:
-            cursor.close()
+            self.__cursor.close()
             cnx.close()
+
+    def __setattr__(self, key, value):
+        if key == 'stock' and value:
+             self.__create_tables(self.__cursor, value)
+
 
     def __create_connectionPool(self, max_num_thread):
         dbconfig = {
