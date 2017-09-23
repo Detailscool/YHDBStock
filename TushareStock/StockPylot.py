@@ -11,6 +11,8 @@ import datetime as dt
 plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
+pd.set_option('display.width', 200)
+
 class StockPylot:
     @classmethod
     def line_plot(cls, data):
@@ -78,12 +80,12 @@ class StockPylot:
         #     d = dt.date.fromtimestamp(data.date[i])
         #     return d.strftime('$%Y-%m-%d$')
         #
-        # ax_candle.xaxis.set_major_locator(DayLocator())
+        ax_candle.xaxis.set_major_locator(DayLocator())
         # ax_candle.xaxis.set_major_formatter(WeekdayLocator(MONDAY))
         ax_candle.xaxis.set_minor_locator(DayLocator())
         # ax_bar.xaxis.set_major_locator(DayLocator())
         # ax_bar.xaxis.set_major_formatter(WeekdayLocator(MONDAY))
-        ax_bar.xaxis.set_minor_locator(DayLocator())
+        # ax_bar.xaxis.set_minor_locator(DayLocator())
 
         ax_candle.set_title(data.code[0])
         ax_candle.set_ylabel('Price')
@@ -100,8 +102,8 @@ class StockPylot:
         ax_candle.set_xlim((x_min-0.02*gap, x_max+0.02*gap))
         ax_bar.set_xlim((x_min-0.02*gap, x_max+0.02*gap))
 
-        plt.setp(plt.gca().get_xticklabels(), rotation=90, horizontalalignment='right')
-        plt.setp(ax_candle.yaxis.get_ticklabels()[0], visible=False)
+        plt.setp(ax_bar.get_xticklabels(), rotation=60)
+        plt.setp(ax_candle.get_xticklabels(), visible=False)
         plt.subplots_adjust(bottom=0.2, top=0.9, hspace=0)
 
         plt.show()

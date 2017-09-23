@@ -38,7 +38,7 @@ class MysqlDBManager:
 
     def __init__(self, max_num_thread=5, stocks=None):
         try:
-            cnx = mysql.connector.connect(host=self.__SERVER_IP, user='root')
+            cnx = mysql.connector.connect(host=self.__SERVER_IP, user='root', passwd='root')
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 print("Something is wrong with your user name or password")
@@ -79,6 +79,7 @@ class MysqlDBManager:
             "database": self.__DB_NAME,
             "user": "root",
             "host": self.__SERVER_IP,
+            "passwd": "root",
         }
         self.cnxpool = mysql.connector.pooling.MySQLConnectionPool(pool_name="mypool",
                                                                    pool_size=max_num_thread,
