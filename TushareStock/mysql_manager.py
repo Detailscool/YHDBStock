@@ -8,8 +8,10 @@
 import MySQLdb
 import sys
 
+
 class mysqlmanager(object):
     _instance = None
+
     def __new__(cls, *args, **kw):
         if not cls._instance:
             cls._instance = super(mysqlmanager, cls).__new__(cls, *args, **kw)
@@ -22,10 +24,12 @@ class mysqlmanager(object):
     """
     功能：连接数据
     """
+
     def __init__(self):
         self.db = None
         try:
-            self.db = MySQLdb.connect(host=self.__host, user=self.__user, passwd=self.__passwd, db=self.__dbname, charset='utf8', connect_timeout=10)
+            self.db = MySQLdb.connect(host=self.__host, user=self.__user, passwd=self.__passwd, db=self.__dbname,
+                                      charset='utf8', connect_timeout=10)
         except Exception as e:
             print e
 
@@ -46,6 +50,7 @@ class mysqlmanager(object):
                 "  `v_ma10` FLOAT(32) NOT NULL," \
                 "  `v_ma20` FLOAT(32) NOT NULL," \
                 "  `turnover` FLOAT(32) NOT NULL," \
+                "  `insert_time` timestamp not null DEFAULT CURRENT_TIMESTAMP," \
                 "  PRIMARY KEY (`index`)" \
                 ") ENGINE=InnoDB"
 
@@ -59,6 +64,7 @@ class mysqlmanager(object):
     输入：sql_com, sql命令
     返回：mysql查询结果数组
     """
+
     def mysql_com(self, sql_com, params=None):
         # 连接数据库
         # if not self.db:
@@ -88,9 +94,10 @@ class mysqlmanager(object):
     def __del__(self):
         self.db.close()
 
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print "please input filename"
+        print "please input filename, args:", sys.argv
         sys.exit()
     stock_table = sys.argv[1]
     mysqlmanager().create_table(stock_table)

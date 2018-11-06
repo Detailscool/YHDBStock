@@ -9,21 +9,20 @@ db_name='stocks'
 source ~/.bash_profile
 
 echo "___________________________begin load search data file_________________________"
-echo [`date "+%Y-%m-%d %H:%M:%S"`] "begin"
 
-#load 入表
 data_path="./Stocks"
 cd ${data_path}
 ls *|while read stock_file
 do
     echo $stock_file
     ../mysql_manager.py $stock_file
-    mysql -h${db_host} -u${db_user} -p${db_pw} -t ${db_name} -e "LOAD DATA local INFILE '"${stock_file}"' into table ${stock_file} FIELDS TERMINATED BY '\t' (date,open,high,close,low,volume,price_change,p_change,ma5,ma10,ma20,v_ma5,v_ma10,v_ma20,turnover)"
+    mysql --local-infile=1 -h${db_host} -u${db_user} -p${db_pw} -t ${db_name} -e "LOAD DATA local INFILE '"${stock_file}"' into table ${file_name} FIELDS TERMINATED BY '\t' (date,open,high,close,low,volume,price_change,p_change,ma5,ma10,ma20,v_ma5,v_ma10,v_ma20,turnover)"
 
     if [ $? -ne 0 ]
     then
         echo "put $stock_file error"
+        exit 1
     fi
 done
 
-echo [`date "+%Y-%m-%d %H:%M:%S"`] 'finish update online table'
+echo "finish update online table, seconds:${SECONDS}"

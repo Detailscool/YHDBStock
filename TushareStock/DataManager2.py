@@ -9,7 +9,6 @@ import Queue
 from time import time
 from multiprocessing.dummy import Pool as ThreadPool
 import os
-import datetime
 from StockPylot import StockPylot
 
 
@@ -131,8 +130,7 @@ class DataManager:
 
     def download_stock_data2(self, stock_code):
         if len(stock_code) == 6:
-            today = datetime.datetime.today().strftime('%Y-%m-%d')
-            data_frame = ts.get_hist_data(stock_code, start=today, end=today)
+            data_frame = ts.get_hist_data(stock_code, start='2017-08-01', end='2018-08-01')
             if data_frame is not None:
                 # print dir(data_frame)
                 if not os.path.exists(self.data_path):
@@ -149,7 +147,7 @@ class DataManager:
                 # f.close()
                 pass
             else:
-                print stock_code + '无效数据 --- ', threading.currentThread().name
+                print stock_code + ' undone --- ', threading.currentThread().name
 
     def download_stock_2(self):
         stock_list = self.__class__.getStockList()
@@ -164,4 +162,3 @@ class DataManager:
 
 if __name__ == '__main__':
     DataManager().download_stock_2()
-    pass
