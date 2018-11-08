@@ -129,8 +129,8 @@ class DataManager:
     data_path = './Stocks/'
 
     def download_stock_data2(self, stock_code):
-        if len(stock_code) == 6:
-            data_frame = ts.get_hist_data(stock_code, start='2017-08-01', end='2018-08-01')
+        try:
+            data_frame = ts.get_hist_data(stock_code, start='2017-01-01', end='2018-11-05')
             if data_frame is not None:
                 # print dir(data_frame)
                 if not os.path.exists(self.data_path):
@@ -148,6 +148,8 @@ class DataManager:
                 pass
             else:
                 print stock_code + ' undone --- ', threading.currentThread().name
+        except Exception as e:
+            print e
 
     def download_stock_2(self):
         stock_list = self.__class__.getStockList()

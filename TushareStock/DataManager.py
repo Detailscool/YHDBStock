@@ -130,7 +130,7 @@ class DataManager:
     data_path = './Stocks/'
 
     def download_stock_data2(self, stock_code):
-        if len(stock_code) == 6:
+        try:
             today = datetime.datetime.today().strftime('%Y-%m-%d')
             data_frame = ts.get_hist_data(stock_code, start=today, end=today)
             if data_frame is not None:
@@ -150,6 +150,8 @@ class DataManager:
                 pass
             else:
                 print stock_code + '无效数据 --- ', threading.currentThread().name
+        except Exception as e:
+            print e
 
     def download_stock_2(self):
         stock_list = self.__class__.getStockList()
