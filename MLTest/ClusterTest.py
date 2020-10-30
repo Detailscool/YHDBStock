@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.cluster import AffinityPropagation
 from matplotlib import finance
 from TushareStock.mysql_manager import mysqlmanager
-from TushareStock import DataManager
+from TushareStock import DataManager2
 import pandas as pd
 from pprint import pprint
 from scipy.stats import mode
@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 
 pd.set_option('display.width', 500)
 
-stock_list = DataManager.getStockList()[-200:]
+stock_list = DataManager2.getStockList()[-200:]
 sqls = ["SELECT code, close, date From t_" + stock[-6:] + " ORDER BY `date` ASC" for stock in stock_list if len(stock)>6]
 a_results = [mysqlmanager().mysql_com(sql) for sql in sqls]
 results = []
