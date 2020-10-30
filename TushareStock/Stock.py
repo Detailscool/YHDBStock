@@ -2,7 +2,7 @@
 
 from MysqlDBManager import MysqlDBManager
 from MongoDBManager import MongoDBManager
-from DataManager import DataManager
+from DataManager2 import DataManager
 
 import Test9
 

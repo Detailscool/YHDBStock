@@ -17,7 +17,7 @@ class mysqlmanager(object):
 
     __host = '127.0.0.1'
     __user = 'root'
-    __passwd = 'root'
+    __passwd = '12345678'
     __dbname = 'stocks'
     """
     功能：连接数据
